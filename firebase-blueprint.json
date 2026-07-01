@@ -1,0 +1,27 @@
+{
+  "entities": {
+    "appointment": {
+      "title": "Appointment",
+      "description": "A booking made by a user for a salon service.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "date": { "type": "string", "description": "YYYY-MM-DD" },
+        "time": { "type": "string", "description": "HH:MM" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled"] },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" }
+      },
+      "required": ["userId", "serviceId", "date", "time", "status", "createdAt", "updatedAt", "userName", "userEmail"]
+    }
+  },
+  "firestore": {
+    "appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/appointment" },
+      "description": "Collection of all appointments."
+    }
+  }
+}

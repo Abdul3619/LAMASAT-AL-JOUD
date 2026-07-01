@@ -1,0 +1,71 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isUserVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidAppointment(data) {
+      return data.keys().hasAll(['userId', 'serviceId', 'date', 'time', 'status', 'createdAt', 'updatedAt', 'userName', 'userEmail'])
+        && data.keys().size() == 9
+        && data.userId is string && data.userId.size() <= 128
+        && data.userId == request.auth.uid
+        && data.serviceId is string && data.serviceId.size() <= 128
+        && data.date is string && data.date.size() == 10
+        && data.time is string && data.time.size() == 5
+        && data.status is string && (data.status == 'pending' || data.status == 'confirmed' || data.status == 'cancelled')
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.userName is string && data.userName.size() <= 200
+        && data.userEmail is string && data.userEmail.size() <= 200;
+    }
+
+    match /appointments/{appointmentId} {
+      // Users can only read their own appointments
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isUserVerified()
+        && isValidId(appointmentId)
+        && isValidAppointment(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isUserVerified()
+        && isValidId(appointmentId)
+        && isValidAppointment(incoming())
+        && incoming().updatedAt == request.time
+        && incoming().userId == existing().userId
+        && incoming().createdAt == existing().createdAt
+        && (
+          // Action: Cancel
+          (incoming().status == 'cancelled' && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+        );
+      
+      allow delete: if false; // Soft deletes via status
+    }
+  }
+}
