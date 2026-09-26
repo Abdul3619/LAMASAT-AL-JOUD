@@ -48,6 +48,7 @@ export const translations = {
       openingHours: 'Opening Hours',
       hoursDesc: 'Sunday - Thursday: 10:00 AM - 10:00 PM\nFriday - Saturday: 2:00 PM - 11:00 PM',
       socials: 'Follow Us',
+      sampleReviews: 'Reviews shown are sample content.',
       rights: '© 2026 صالون لمسات الجود. All rights reserved.',
     }
   },
@@ -100,6 +101,7 @@ export const translations = {
       openingHours: 'ساعات العمل',
       hoursDesc: 'الأحد - الخميس: 10:00 صباحاً - 10:00 مساءً\nالجمعة - السبت: 2:00 مساءً - 11:00 مساءً',
       socials: 'تابعنا على',
+      sampleReviews: 'التقييمات المعروضة هي محتوى توضيحي.',
       rights: '© 2026 صالون لمسات الجود. جميع الحقوق محفوظة.',
     }
   }
