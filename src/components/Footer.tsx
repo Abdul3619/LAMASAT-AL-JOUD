@@ -57,13 +57,14 @@ export default function Footer() {
 
         </div>
 
-        <div className="mt-20 pt-8 border-t border-[#E8D8C8] flex flex-col md:flex-row justify-between items-center opacity-40 text-[9px] uppercase tracking-[0.2em] font-semibold">
-          <span>&copy; 2026 LAMASAT AL JOOD</span>
-          <span className="mt-4 md:mt-0">BISHA, KSA</span>
+        <div className="mt-20 pt-8 border-t border-[#E8D8C8] flex flex-col md:flex-row justify-between items-center">
+          <p className="text-center md:text-start">
+            <span className="opacity-40 text-[9px] uppercase tracking-[0.2em] font-semibold">&copy; 2026 LAMASAT AL JOOD</span>
+            {/* Sample-content notice: same line as the copyright, at a readable size */}
+            <span className="ms-3 font-sans text-xs opacity-80">{t.footer.sampleReviews}</span>
+          </p>
+          <span className="mt-4 md:mt-0 opacity-40 text-[9px] uppercase tracking-[0.2em] font-semibold">BISHA, KSA</span>
         </div>
-        <p className="mt-4 text-center opacity-40 text-[9px] tracking-[0.2em] font-semibold">
-          {t.footer.sampleReviews}
-        </p>
       </div>
     </footer>
   );
