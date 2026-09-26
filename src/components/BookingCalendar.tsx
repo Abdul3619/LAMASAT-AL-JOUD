@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../lib/LanguageContext';
-import { format, addDays, startOfToday, isSameDay } from 'date-fns';
+import { format, addDays, isSameDay } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { db, auth, signInWithGoogle, logout } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { db, signInWithGoogle } from '../lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { isSlotAvailable, salonToday } from '../lib/availability';
 import { useAuth } from '../lib/useAuth';
 import bookingBg from '../assets/images/booking_bg_1782760954859.jpg';
 
@@ -23,17 +24,36 @@ export default function BookingCalendar() {
   const { user, loading } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState('');
-  const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
+  const [selectedDate, setSelectedDate] = useState<Date>(salonToday());
   const [selectedTime, setSelectedTime] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Generate next 14 days
-  const today = startOfToday();
+  const today = salonToday();
   const days = Array.from({ length: 14 }).map((_, i) => addDays(today, i));
+
+  const handleSignIn = async () => {
+    setError(null);
+    try {
+      await signInWithGoogle();
+    } catch {
+      setError(lang === 'en'
+        ? 'Sign-in failed. Please allow pop-ups for this site and try again.'
+        : 'تعذر تسجيل الدخول. يرجى السماح بالنوافذ المنبثقة لهذا الموقع والمحاولة مرة أخرى.');
+    }
+  };
 
   const handleBook = async () => {
     if (!user || !selectedService || !selectedTime) return;
+    if (!isSlotAvailable(selectedDate, selectedTime)) {
+      setError(lang === 'en' ? 'That time is no longer available. Please choose another slot.' : 'هذا الموعد لم يعد متاحاً. يرجى اختيار موعد آخر.');
+      setSelectedTime('');
+      setStep(2);
+      return;
+    }
+    setError(null);
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, 'appointments'), {
@@ -49,22 +69,11 @@ export default function BookingCalendar() {
       });
       setSuccess(true);
       setStep(4);
-    } catch (error) {
-      console.error('Error booking:', error);
-      const errInfo = {
-        error: error instanceof Error ? error.message : String(error),
-        authInfo: {
-          userId: auth.currentUser?.uid,
-          email: auth.currentUser?.email,
-          emailVerified: auth.currentUser?.emailVerified,
-          isAnonymous: auth.currentUser?.isAnonymous,
-          tenantId: auth.currentUser?.tenantId,
-        },
-        operationType: 'create',
-        path: 'appointments'
-      };
-      console.error('Firestore Error: ', JSON.stringify(errInfo));
-      alert('Error booking appointment.');
+    } catch (err) {
+      console.error('Error booking appointment:', err);
+      setError(lang === 'en'
+        ? 'We could not save your booking. Please try again, or contact us by phone or WhatsApp.'
+        : 'تعذر حفظ حجزك. يرجى المحاولة مرة أخرى أو التواصل معنا عبر الهاتف أو واتساب.');
     } finally {
       setIsSubmitting(false);
     }
@@ -73,9 +82,10 @@ export default function BookingCalendar() {
   const reset = () => {
     setStep(1);
     setSelectedService('');
-    setSelectedDate(startOfToday());
+    setSelectedDate(salonToday());
     setSelectedTime('');
     setSuccess(false);
+    setError(null);
   };
 
   if (loading) {
@@ -106,13 +116,16 @@ export default function BookingCalendar() {
         </div>
 
         <div className="bg-[#FFF8F0]/70 backdrop-blur-md border border-[#FFFFFF] p-8 md:p-12 shadow-xl min-h-[400px] relative overflow-hidden rounded-sm">
+          {error && (
+            <p role="alert" className="mb-6 text-center text-sm text-red-700">{error}</p>
+          )}
           {!user ? (
             <div className="flex flex-col items-center justify-center h-full space-y-6 py-12">
               <p className="font-sans text-sm tracking-wide text-[#2B2D42]/80 text-center">
                 {lang === 'en' ? 'Please sign in to book an appointment.' : 'يرجى تسجيل الدخول لحجز موعد.'}
               </p>
               <button
-                onClick={signInWithGoogle}
+                onClick={handleSignIn}
                 className="bg-[#D4A373] text-[#FFFFFF] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors"
               >
                 {lang === 'en' ? 'Sign in with Google' : 'تسجيل الدخول باستخدام جوجل'}
@@ -177,7 +190,7 @@ export default function BookingCalendar() {
                           {days.map(d => (
                             <button
                               key={d.toISOString()}
-                              onClick={() => setSelectedDate(d)}
+                              onClick={() => { setSelectedDate(d); setSelectedTime(''); }}
                               className={`shrink-0 flex flex-col items-center justify-center w-16 h-20 border transition-all ${
                                 isSameDay(d, selectedDate) 
                                   ? 'bg-[#D4A373] border-[#D4A373] text-[#FFFFFF]' 
@@ -196,11 +209,14 @@ export default function BookingCalendar() {
                           {lang === 'en' ? 'Select Time' : 'اختر الوقت'}
                         </h4>
                         <div className="grid grid-cols-4 gap-3">
-                          {timeSlots.map(time => (
+                          {timeSlots.map(time => {
+                            const available = isSlotAvailable(selectedDate, time);
+                            return (
                             <button
                               key={time}
-                              onClick={() => { setSelectedTime(time); setStep(3); }}
-                              className={`py-3 border text-xs tracking-wider transition-all ${
+                              disabled={!available}
+                              onClick={() => { setSelectedTime(time); setError(null); setStep(3); }}
+                              className={`py-3 border text-xs tracking-wider transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
                                 selectedTime === time
                                   ? 'bg-[#D4A373] border-[#D4A373] text-[#FFF8F0]'
                                   : 'border-[#E8D8C8] text-[#2B2D42] hover:border-[#D4A373]'
@@ -208,7 +224,8 @@ export default function BookingCalendar() {
                             >
                               {time}
                             </button>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                       
@@ -272,7 +289,7 @@ export default function BookingCalendar() {
                         <Check className="w-8 h-8" />
                       </div>
                       <h4 className="font-serif text-3xl text-[#2B2D42] mb-4">
-                        {lang === 'en' ? 'Booking Confirmed' : 'تم تأكيد الحجز'}
+                        {lang === 'en' ? 'Booking Received' : 'تم استلام الحجز'}
                       </h4>
                       <p className="text-sm font-sans tracking-wide text-[#2B2D42]/70 mb-8 max-w-sm">
                         {lang === 'en' 

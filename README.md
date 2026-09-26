@@ -1,20 +1,31 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Lamasat Al Jood – Salon Website
 
-# Run and deploy your AI Studio app
+Bilingual (English / Arabic) website for Lamasat Al Jood beauty salon in Bisha, Saudi Arabia, with online appointment booking.
 
-This contains everything you need to run your app locally.
+## Stack
 
-View your app in AI Studio: https://ai.studio/apps/dc6b3d84-e559-42ae-bcad-99ad1a459c6a
+- React 19, Vite, Tailwind CSS 4, Motion, Embla Carousel
+- Firebase Authentication (Google sign-in) and Cloud Firestore (appointments)
 
-## Run Locally
+The page is prerendered at build time (`src/entry-server.tsx` + `scripts/prerender.mjs`), so `dist/index.html` contains the full page content; the browser then hydrates it.
 
-**Prerequisites:**  Node.js
+## Development
 
+```bash
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # production build in dist/
+npm run lint     # type-check
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Deployment
+
+Static site. Framework: Vite · Build command: `npm run build` · Output directory: `dist`.
+
+No environment variables are required. The Firebase web configuration lives in `firebase-applet-config.json` (these values are public by design; access is controlled by `firestore.rules`).
+
+For Google sign-in to work on a deployed domain, add that domain under Firebase Console → Authentication → Settings → Authorized domains.
+
+## Bookings
+
+Bookings are stored in the `appointments` Firestore collection with status `pending`. Time slots follow the salon's opening hours (Sunday–Thursday from 10:00, Friday–Saturday from 14:00, Saudi time), and slots in the past cannot be booked.

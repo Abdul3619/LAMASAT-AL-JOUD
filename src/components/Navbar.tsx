@@ -54,6 +54,7 @@ export default function Navbar() {
             
             <button
               onClick={toggleLang}
+              aria-label={lang === 'en' ? 'Switch to Arabic' : 'Switch to English'}
               className="flex items-center space-x-2 rtl:space-x-reverse text-[11px] tracking-[0.2em] font-semibold opacity-60 hover:opacity-100 transition-opacity text-[#2B2D42]"
             >
               <Globe className="w-3 h-3" />
@@ -73,6 +74,8 @@ export default function Navbar() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-[#2B2D42]"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>

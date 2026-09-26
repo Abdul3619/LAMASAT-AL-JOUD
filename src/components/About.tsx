@@ -7,7 +7,7 @@ export default function About() {
   const { t } = useLanguage();
 
   return (
-    <section id="about" className="py-24 bg-[#E8D8C8]/10 relative border-b border-[#E8D8C8]">
+    <section id="about" className="py-24 bg-[#E8D8C8]/10 relative border-b border-[#E8D8C8] overflow-x-clip">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           
