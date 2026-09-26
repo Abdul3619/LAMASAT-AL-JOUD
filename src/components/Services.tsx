@@ -116,6 +116,7 @@ export default function Services() {
           <button
             className="absolute top-1/2 -left-4 md:-left-8 -translate-y-1/2 w-12 h-12 bg-[#FFFFFF] rounded-none border border-[#E8D8C8] shadow-md flex items-center justify-center text-[#2B2D42] hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors z-10"
             onClick={scrollPrev}
+            aria-label="Previous service"
           >
             {lang === 'ar' ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </button>
@@ -123,6 +124,7 @@ export default function Services() {
           <button
             className="absolute top-1/2 -right-4 md:-right-8 -translate-y-1/2 w-12 h-12 bg-[#FFFFFF] rounded-none border border-[#E8D8C8] shadow-md flex items-center justify-center text-[#2B2D42] hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors z-10"
             onClick={scrollNext}
+            aria-label="Next service"
           >
             {lang === 'ar' ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
           </button>

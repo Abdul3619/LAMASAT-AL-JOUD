@@ -40,16 +40,16 @@ export default function Footer() {
           <div className="space-y-6">
             <h3 className="text-[10px] text-[#FFF8F0] font-semibold tracking-[0.3em] uppercase">{t.footer.socials}</h3>
             <div className="flex space-x-4 rtl:space-x-reverse">
-              <a href="#" className="w-10 h-10 rounded-none border border-[#E8D8C8] flex items-center justify-center hover:bg-[#D4A373] hover:border-[#D4A373] hover:text-[#FFFFFF] transition-all">
+              <a href="#" aria-label="Instagram" className="w-10 h-10 rounded-none border border-[#E8D8C8] flex items-center justify-center hover:bg-[#D4A373] hover:border-[#D4A373] hover:text-[#FFFFFF] transition-all">
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-none border border-[#E8D8C8] flex items-center justify-center hover:bg-[#D4A373] hover:border-[#D4A373] hover:text-[#FFFFFF] transition-all">
+              <a href="#" aria-label="Facebook" className="w-10 h-10 rounded-none border border-[#E8D8C8] flex items-center justify-center hover:bg-[#D4A373] hover:border-[#D4A373] hover:text-[#FFFFFF] transition-all">
                 <Facebook className="w-4 h-4" />
               </a>
-              <a href="tel:+966509531383" className="w-10 h-10 rounded-none border border-[#E8D8C8] flex items-center justify-center hover:bg-[#D4A373] hover:border-[#D4A373] hover:text-[#FFFFFF] transition-all">
+              <a href="tel:+966509531383" aria-label="Call us" className="w-10 h-10 rounded-none border border-[#E8D8C8] flex items-center justify-center hover:bg-[#D4A373] hover:border-[#D4A373] hover:text-[#FFFFFF] transition-all">
                 <Phone className="w-4 h-4" />
               </a>
-              <a href="https://maps.google.com" className="w-10 h-10 rounded-none border border-[#E8D8C8] flex items-center justify-center hover:bg-[#D4A373] hover:border-[#D4A373] hover:text-[#FFFFFF] transition-all">
+              <a href="https://www.google.com/maps/search/?api=1&query=XJR3%2BH5%20Bisha%20Saudi%20Arabia" target="_blank" rel="noopener noreferrer" aria-label="Open location in Google Maps" className="w-10 h-10 rounded-none border border-[#E8D8C8] flex items-center justify-center hover:bg-[#D4A373] hover:border-[#D4A373] hover:text-[#FFFFFF] transition-all">
                 <MapPin className="w-4 h-4" />
               </a>
             </div>
