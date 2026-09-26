@@ -61,6 +61,9 @@ export default function Footer() {
           <span>&copy; 2026 LAMASAT AL JOOD</span>
           <span className="mt-4 md:mt-0">BISHA, KSA</span>
         </div>
+        <p className="mt-4 text-center opacity-40 text-[9px] tracking-[0.2em] font-semibold">
+          {t.footer.sampleReviews}
+        </p>
       </div>
     </footer>
   );
