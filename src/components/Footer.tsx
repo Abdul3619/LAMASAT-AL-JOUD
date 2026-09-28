@@ -63,7 +63,13 @@ export default function Footer() {
             {/* Sample-content notice: same line as the copyright, at a readable size */}
             <span className="ms-3 font-sans text-xs opacity-80">{t.footer.sampleReviews}</span>
           </p>
-          <span className="mt-4 md:mt-0 opacity-40 text-[9px] uppercase tracking-[0.2em] font-semibold">BISHA, KSA</span>
+          <p className="mt-4 md:mt-0 text-center md:text-end">
+            <span className="opacity-40 text-[9px] uppercase tracking-[0.2em] font-semibold">BISHA, KSA</span>
+            <span className="ms-3 font-sans text-xs opacity-80">
+              {t.footer.builtBy} ·{' '}
+              <a href="mailto:abdulwahababdullahi3619@gmail.com" className="underline hover:text-[#D4A373]">{t.footer.contactDev}</a>
+            </span>
+          </p>
         </div>
       </div>
     </footer>

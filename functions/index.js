@@ -7,7 +7,7 @@ import { logger } from 'firebase-functions';
 import nodemailer from 'nodemailer';
 import { buildBookingEmail } from './bookingEmail.js';
 
-// The site's Firestore database (from firebase-applet-config.json).
+// The site's Firestore database (from firebase-config.json).
 const DATABASE_ID = 'ai-studio-lamasataljoudsal-dc6b3d84-e559-42ae-bcad-99ad1a459c6a';
 // Must be compatible with the database's location; change if deploy reports a region mismatch.
 const REGION = 'us-central1';
