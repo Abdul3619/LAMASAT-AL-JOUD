@@ -1,6 +1,6 @@
 # Lamasat Al Jood – Salon Website
 
-Bilingual (English / Arabic) website for Lamasat Al Jood beauty salon in Bisha, Saudi Arabia, with online appointment booking.
+I built this bilingual (English / Arabic) website for Lamasat Al Jood, a beauty salon in Bisha, Saudi Arabia. Clients can browse the services and book an appointment online.
 
 ## Stack
 
@@ -22,7 +22,7 @@ npm run lint     # type-check
 
 Static site. Framework: Vite · Build command: `npm run build` · Output directory: `dist`.
 
-No environment variables are required. The Firebase web configuration lives in `firebase-applet-config.json` (these values are public by design; access is controlled by `firestore.rules`).
+No environment variables are required. The Firebase web configuration lives in `firebase-config.json` (these values are public by design; access is controlled by `firestore.rules`).
 
 For Google sign-in to work on a deployed domain, add that domain under Firebase Console → Authentication → Settings → Authorized domains.
 
