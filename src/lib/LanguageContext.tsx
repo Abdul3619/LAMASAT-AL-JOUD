@@ -11,6 +11,20 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Language>('en');
+  const [restored, setRestored] = useState(false);
+
+  // Remember the visitor's language; the prerendered page is English, so the saved choice is applied after hydration
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem('amara:lang') === 'ar') setLang('ar');
+    } catch { /* storage unavailable */ }
+    setRestored(true);
+  }, []);
+
+  useEffect(() => {
+    if (!restored) return;
+    try { window.localStorage.setItem('amara:lang', lang); } catch { /* ignore */ }
+  }, [lang, restored]);
 
   const toggleLang = () => {
     setLang((prev) => (prev === 'en' ? 'ar' : 'en'));

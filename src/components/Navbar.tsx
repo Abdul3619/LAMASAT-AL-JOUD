@@ -26,6 +26,7 @@ export default function Navbar() {
 
   return (
     <nav
+      aria-label="Main"
       className={`fixed w-full z-50 transition-all duration-500 border-b ${
         isScrolled ? 'bg-[#FFF8F0]/95 backdrop-blur-md shadow-sm h-16 border-[#E8D8C8]' : 'bg-[#FFF8F0] h-20 border-[#E8D8C8]/50'
       }`}
@@ -34,10 +35,10 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-full">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center flex-col justify-center">
-            <a href="#home" className="font-serif text-xl md:text-2xl tracking-tighter text-[#2B2D42]">
-              لمسات الجود
+            <a href="#home" className="font-serif text-xl md:text-2xl tracking-tight text-[#2B2D42]" aria-label="Amāra Beauty Lounge">
+              {lang === 'en' ? 'Amāra' : 'أمارا'}
             </a>
-            <span className="text-[9px] uppercase tracking-[0.3em] text-[#2B2D42] hidden md:block">Lamasat Al Jood</span>
+            <span className="text-[9px] uppercase tracking-[0.3em] text-[#2B2D42] hidden md:block">{lang === 'en' ? 'Beauty Lounge' : 'بيوتي لاونج'}</span>
           </div>
 
           {/* Desktop Menu */}
@@ -55,7 +56,7 @@ export default function Navbar() {
             <button
               onClick={toggleLang}
               aria-label={lang === 'en' ? 'Switch to Arabic' : 'Switch to English'}
-              className="flex items-center space-x-2 rtl:space-x-reverse text-[11px] tracking-[0.2em] font-semibold opacity-60 hover:opacity-100 transition-opacity text-[#2B2D42]"
+              className="press flex items-center space-x-2 rtl:space-x-reverse text-[11px] tracking-[0.2em] font-semibold text-[#2B2D42]/80 hover:text-[#2B2D42] transition-colors"
             >
               <Globe className="w-3 h-3" />
               <span>{lang === 'en' ? 'عربي' : 'EN'}</span>
@@ -63,7 +64,7 @@ export default function Navbar() {
 
             <a
               href="#booking"
-              className="bg-[#D4A373] text-[#FFFFFF] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors ml-4 rtl:mr-4"
+              className="press bg-[#2B2D42] text-[#FFFFFF] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors ml-4 rtl:mr-4"
             >
               {t.nav.bookNow}
             </a>

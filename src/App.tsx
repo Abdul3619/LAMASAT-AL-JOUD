@@ -12,6 +12,7 @@ import About from './components/About';
 import BookingCalendar from './components/BookingCalendar';
 import Location from './components/Location';
 import Reviews from './components/Reviews';
+import Faq from './components/Faq';
 import Footer from './components/Footer';
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
           <BookingCalendar />
           <Location />
           <Reviews />
+          <Faq />
         </main>
         <Footer />
       </div>

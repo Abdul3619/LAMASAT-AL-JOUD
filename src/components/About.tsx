@@ -1,7 +1,8 @@
 import React from 'react';
 import { useLanguage } from '../lib/LanguageContext';
 import { motion } from 'motion/react';
-import aboutImage from '../assets/images/about_bg_1782761085513.jpg';
+import SmartImage from './SmartImage';
+import { IMAGES } from '../data/images';
 
 export default function About() {
   const { t } = useLanguage();
@@ -45,11 +46,7 @@ export default function About() {
             {/* Decorative Offset Border */}
             <div className="absolute inset-0 border border-[#D4A373] translate-x-4 translate-y-4"></div>
             
-            <img
-              src={aboutImage}
-              alt="Serene Salon Interior"
-              className="absolute inset-0 w-full h-full object-cover z-10 grayscale-[0.2]"
-            />
+            <SmartImage image={IMAGES.about} wrapperClassName="absolute inset-0 z-10" className="w-full h-full object-cover grayscale-[0.2]" />
           </motion.div>
 
         </div>

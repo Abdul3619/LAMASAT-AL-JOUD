@@ -5,9 +5,8 @@ import Fade from 'embla-carousel-fade';
 import { useLanguage } from '../lib/LanguageContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import facialImage from '../assets/images/service_facial_1782761107251.jpg';
-import hairImage from '../assets/images/service_hair_1782761122577.jpg';
-import nailsImage from '../assets/images/service_nails_1782761136735.jpg';
+import SmartImage from './SmartImage';
+import { IMAGES } from '../data/images';
 
 export default function Services() {
   const { t, lang } = useLanguage();
@@ -40,19 +39,19 @@ export default function Services() {
   const servicesList = [
     {
       id: 'facial',
-      image: facialImage,
+      image: IMAGES.facial,
       title: t.services.facial.title,
       desc: t.services.facial.desc,
     },
     {
       id: 'hair',
-      image: hairImage,
+      image: IMAGES.hair,
       title: t.services.hair.title,
       desc: t.services.hair.desc,
     },
     {
       id: 'nails',
-      image: nailsImage,
+      image: IMAGES.nails,
       title: t.services.nails.title,
       desc: t.services.nails.desc,
     },
@@ -63,9 +62,9 @@ export default function Services() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center mb-16">
-          <h3 className="text-[10px] uppercase tracking-[0.4em] text-[#2B2D42] mb-6">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-[#2B2D42] mb-6">
             The Curated Menu
-          </h3>
+          </p>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -84,25 +83,21 @@ export default function Services() {
             <div className="embla__container h-[600px]">
               {servicesList.map((service, index) => (
                 <div className="embla__slide relative" key={service.id}>
-                  <img
-                    src={service.image}
-                    alt={service.title}
-                    className="absolute inset-0 w-full h-full object-cover grayscale-[0.3]"
-                  />
+                  <SmartImage image={service.image} sizes="(min-width: 1024px) 1024px, 100vw" wrapperClassName="absolute inset-0" className="w-full h-full object-cover grayscale-[0.3]" />
                   {/* Gradient Overlay for text readability */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111111]/90 via-[#111111]/40 to-transparent"></div>
                   
                   {/* Content */}
                   <div className="absolute inset-0 flex flex-col justify-end p-10 md:p-16">
                     <span className="text-[10px] uppercase tracking-widest text-[#D4A373] mb-2 font-medium">0{index + 1}</span>
-                    <h4 className="font-serif text-3xl md:text-5xl text-[#FFFFFF] mb-4">
+                    <h3 className="font-serif text-3xl md:text-5xl text-[#FFFFFF] mb-4">
                       {service.title}
-                    </h4>
+                    </h3>
                     <p className="text-[#FFFFFF]/80 text-sm tracking-wide max-w-md mb-8 font-sans leading-relaxed">
                       {service.desc}
                     </p>
                     <div>
-                      <a href="#booking" className="inline-block px-8 py-3 border border-[#FFFFFF] text-[#FFFFFF] hover:bg-[#D4A373] hover:border-[#D4A373] transition-all duration-300 text-[11px] font-semibold tracking-widest uppercase">
+                      <a href="#booking" className="press inline-block px-8 py-3 border border-[#FFFFFF] text-[#FFFFFF] hover:bg-[#D4A373] hover:border-[#D4A373] transition-all duration-300 text-[11px] font-semibold tracking-widest uppercase">
                         {t.services.viewDetails}
                       </a>
                     </div>

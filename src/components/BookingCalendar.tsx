@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../lib/LanguageContext';
-import { format, addDays, isSameDay } from 'date-fns';
+import { format, addDays, isSameDay, parseISO } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { db, signInWithGoogle } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { isSlotAvailable, salonToday } from '../lib/availability';
 import { useAuth } from '../lib/useAuth';
-import bookingBg from '../assets/images/booking_bg_1782760954859.jpg';
+import { IMAGES } from '../data/images';
+import { useLocalStorage } from '../lib/useLocalStorage';
 
 const servicesList = [
   { id: 'facial', name: { en: 'Facial Treatment', ar: 'علاج الوجه' }, duration: '60 min', price: '$120' },
@@ -22,13 +23,20 @@ const timeSlots = [
 export default function BookingCalendar() {
   const { lang, t } = useLanguage();
   const { user, loading } = useAuth();
-  const [step, setStep] = useState(1);
-  const [selectedService, setSelectedService] = useState('');
-  const [selectedDate, setSelectedDate] = useState<Date>(salonToday());
-  const [selectedTime, setSelectedTime] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  // Progress (service, date, time and step) is kept on this device so a reload or a detour to sign in doesn't lose it
+  const [saved, setSaved, clearSaved] = useLocalStorage<{ step: number; service: string; date: string; time: string }>(
+    'amara:booking', { step: 1, service: '', date: '', time: '' });
+  const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const step = done ? 4 : saved.step;
+  const selectedService = saved.service;
+  const selectedTime = saved.time;
+  const savedDate = saved.date ? parseISO(saved.date) : null;
+  const selectedDate = savedDate && savedDate >= salonToday() ? savedDate : salonToday();
+  const setStep = (s: number) => setSaved((v) => ({ ...v, step: s }));
+  const setSelectedService = (service: string) => setSaved((v) => ({ ...v, service }));
+  const setSelectedDate = (d: Date) => setSaved((v) => ({ ...v, date: format(d, 'yyyy-MM-dd'), time: '' }));
+  const setSelectedTime = (time: string) => setSaved((v) => ({ ...v, time }));
 
   // Generate next 14 days
   const today = salonToday();
@@ -54,7 +62,9 @@ export default function BookingCalendar() {
       return;
     }
     setError(null);
-    setIsSubmitting(true);
+    // Optimistic: show the confirmation straight away and save in the background. If saving fails, the
+    // visitor is taken back to the summary with their choices intact.
+    setDone(true);
     try {
       await addDoc(collection(db, 'appointments'), {
         userId: user.uid,
@@ -67,48 +77,35 @@ export default function BookingCalendar() {
         userName: user.displayName || 'Guest',
         userEmail: user.email || ''
       });
-      setSuccess(true);
-      setStep(4);
+      clearSaved();
     } catch (err) {
       console.error('Error booking appointment:', err);
+      setDone(false);
       setError(lang === 'en'
-        ? 'We could not save your booking. Please try again, or contact us by phone or WhatsApp.'
-        : 'تعذر حفظ حجزك. يرجى المحاولة مرة أخرى أو التواصل معنا عبر الهاتف أو واتساب.');
-    } finally {
-      setIsSubmitting(false);
+        ? 'We could not save your booking. Your choices are still here, so please try again or message us on WhatsApp.'
+        : 'تعذر حفظ حجزك. يرجى المحاولة مرة أخرى أو التواصل معنا عبر واتساب.');
     }
   };
 
   const reset = () => {
-    setStep(1);
-    setSelectedService('');
-    setSelectedDate(salonToday());
-    setSelectedTime('');
-    setSuccess(false);
+    clearSaved();
+    setDone(false);
     setError(null);
   };
-
-  if (loading) {
-    return <div className="py-24 text-center">Loading...</div>;
-  }
 
   return (
     <section id="booking" className="py-24 relative border-b border-[#E8D8C8]">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
-          src={bookingBg}
-          alt="Luxury Background"
-          className="w-full h-full object-cover opacity-30"
-        />
+        <img src={IMAGES.booking.src} srcSet={IMAGES.booking.srcSet} sizes="100vw" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-30" />
         <div className="absolute inset-0 bg-[#FFF8F0]/80"></div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
-          <h3 className="text-[10px] uppercase tracking-[0.4em] text-[#2B2D42] mb-6">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-[#2B2D42] mb-6">
             {lang === 'en' ? 'Reservations' : 'الحجوزات'}
-          </h3>
+          </p>
           <h2 className="font-serif text-4xl md:text-5xl text-[#2B2D42] mb-4">
             {lang === 'en' ? 'Book Your Visit' : 'احجز زيارتك'}
           </h2>
@@ -119,14 +116,19 @@ export default function BookingCalendar() {
           {error && (
             <p role="alert" className="mb-6 text-center text-sm text-red-700">{error}</p>
           )}
-          {!user ? (
+          {loading ? (
+            <div aria-busy="true" aria-label={t.booking.loading} className="space-y-6 py-4">
+              <div className="flex justify-between gap-6">{[0, 1, 2].map((i) => <div key={i} className="skeleton h-12 flex-1" />)}</div>
+              {[0, 1, 2].map((i) => <div key={i} className="skeleton h-20 w-full" />)}
+            </div>
+          ) : !user ? (
             <div className="flex flex-col items-center justify-center h-full space-y-6 py-12">
               <p className="font-sans text-sm tracking-wide text-[#2B2D42]/80 text-center">
                 {lang === 'en' ? 'Please sign in to book an appointment.' : 'يرجى تسجيل الدخول لحجز موعد.'}
               </p>
               <button
                 onClick={handleSignIn}
-                className="bg-[#D4A373] text-[#FFFFFF] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors"
+                className="press bg-[#D4A373] text-[#2B2D42] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] transition-colors"
               >
                 {lang === 'en' ? 'Sign in with Google' : 'تسجيل الدخول باستخدام جوجل'}
               </button>
@@ -137,10 +139,10 @@ export default function BookingCalendar() {
               <div className="flex justify-between items-center mb-10 border-b border-[#E8D8C8] pb-6">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex flex-col items-center flex-1">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border transition-colors ${step >= i ? 'bg-[#D4A373] border-[#D4A373] text-[#FFFFFF]' : 'bg-transparent border-[#E8D8C8] text-[#2B2D42]/50'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border transition-colors ${step >= i ? 'bg-[#D4A373] border-[#D4A373] text-[#2B2D42]' : 'bg-transparent border-[#E8D8C8] text-[#2B2D42]/75'}`}>
                       {step > i ? <Check className="w-4 h-4" /> : i}
                     </div>
-                    <span className={`text-[9px] uppercase tracking-[0.2em] mt-3 ${step >= i ? 'text-[#2B2D42]' : 'text-[#2B2D42]/40'}`}>
+                    <span className={`text-[9px] uppercase tracking-[0.2em] mt-3 ${step >= i ? 'text-[#2B2D42]' : 'text-[#2B2D42]/75'}`}>
                       {lang === 'en' 
                         ? (i === 1 ? 'Service' : i === 2 ? 'Date & Time' : 'Confirm') 
                         : (i === 1 ? 'الخدمة' : i === 2 ? 'الموعد' : 'تأكيد')}
@@ -160,18 +162,21 @@ export default function BookingCalendar() {
                       className="space-y-4"
                     >
                       {servicesList.map(s => (
-                        <div 
+                        <button
+                          type="button"
                           key={s.id}
-                          onClick={() => { setSelectedService(s.id); setStep(2); }}
-                          className="group cursor-pointer border border-[#E8D8C8] p-6 flex justify-between items-center hover:border-[#D4A373] transition-all"
+                          onClick={() => { setSaved((v) => ({ ...v, service: s.id, step: 2 })); }}
+                          aria-pressed={selectedService === s.id}
+                          className={`press w-full text-start group border p-6 flex justify-between items-center hover:border-[#D4A373] transition-all ${selectedService === s.id ? 'border-[#D4A373] bg-[#FFFFFF]/60' : 'border-[#E8D8C8]'}`}
                         >
-                          <div>
-                            <h4 className="font-serif text-xl text-[#2B2D42] mb-1 group-hover:text-[#2B2D42] transition-colors">{s.name[lang as 'en'|'ar']}</h4>
-                            <p className="text-[11px] uppercase tracking-widest text-[#2B2D42]/50">{s.duration}</p>
-                          </div>
-                          <span className="text-sm font-medium text-[#2B2D42]/80">{s.price}</span>
-                        </div>
+                          <span>
+                            <span className="block font-serif text-xl text-[#2B2D42] mb-1">{s.name[lang as 'en'|'ar']}</span>
+                            <span className="block text-[11px] uppercase tracking-widest text-[#2B2D42]/75">{s.duration}</span>
+                          </span>
+                          <span className="text-sm font-medium text-[#2B2D42]">{s.price}</span>
+                        </button>
                       ))}
+                      <p className="text-xs text-[#2B2D42]/75 pt-2">{t.booking.saved}</p>
                     </motion.div>
                   )}
 
@@ -183,17 +188,19 @@ export default function BookingCalendar() {
                       exit={{ opacity: 0, x: -20 }}
                     >
                       <div className="mb-8">
-                        <h4 className="text-[11px] uppercase tracking-[0.2em] text-[#2B2D42]/60 mb-4">
+                        <h4 className="text-[11px] uppercase tracking-[0.2em] text-[#2B2D42]/80 mb-4">
                           {lang === 'en' ? 'Select Date' : 'اختر التاريخ'}
                         </h4>
                         <div className="flex space-x-3 rtl:space-x-reverse overflow-x-auto pb-4 no-scrollbar">
                           {days.map(d => (
                             <button
                               key={d.toISOString()}
-                              onClick={() => { setSelectedDate(d); setSelectedTime(''); }}
+                              onClick={() => setSelectedDate(d)}
+                              aria-pressed={isSameDay(d, selectedDate)}
+                              aria-label={format(d, 'EEEE d MMMM')}
                               className={`shrink-0 flex flex-col items-center justify-center w-16 h-20 border transition-all ${
-                                isSameDay(d, selectedDate) 
-                                  ? 'bg-[#D4A373] border-[#D4A373] text-[#FFFFFF]' 
+                                isSameDay(d, selectedDate)
+                                  ? 'bg-[#D4A373] border-[#D4A373] text-[#2B2D42]' 
                                   : 'border-[#E8D8C8] text-[#2B2D42] hover:border-[#D4A373]'
                               }`}
                             >
@@ -205,7 +212,7 @@ export default function BookingCalendar() {
                       </div>
 
                       <div>
-                        <h4 className="text-[11px] uppercase tracking-[0.2em] text-[#2B2D42]/60 mb-4">
+                        <h4 className="text-[11px] uppercase tracking-[0.2em] text-[#2B2D42]/80 mb-4">
                           {lang === 'en' ? 'Select Time' : 'اختر الوقت'}
                         </h4>
                         <div className="grid grid-cols-4 gap-3">
@@ -215,10 +222,11 @@ export default function BookingCalendar() {
                             <button
                               key={time}
                               disabled={!available}
-                              onClick={() => { setSelectedTime(time); setError(null); setStep(3); }}
-                              className={`py-3 border text-xs tracking-wider transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                              onClick={() => { setSaved((v) => ({ ...v, time, step: 3 })); setError(null); }}
+                              aria-pressed={selectedTime === time}
+                              className={`py-3 border text-xs tracking-wider transition-all disabled:opacity-40 disabled:line-through disabled:cursor-not-allowed ${
                                 selectedTime === time
-                                  ? 'bg-[#D4A373] border-[#D4A373] text-[#FFF8F0]'
+                                  ? 'bg-[#D4A373] border-[#D4A373] text-[#2B2D42]'
                                   : 'border-[#E8D8C8] text-[#2B2D42] hover:border-[#D4A373]'
                               }`}
                             >
@@ -230,7 +238,7 @@ export default function BookingCalendar() {
                       </div>
                       
                       <div className="mt-8 flex justify-start">
-                         <button onClick={() => setStep(1)} className="text-[11px] uppercase tracking-widest text-[#2B2D42]/60 hover:text-[#2B2D42]">
+                         <button onClick={() => setStep(1)} className="text-[11px] uppercase tracking-widest text-[#2B2D42]/80 hover:text-[#2B2D42]">
                             {lang === 'en' ? '← Back' : 'رجوع →'}
                          </button>
                       </div>
@@ -250,29 +258,28 @@ export default function BookingCalendar() {
                            {lang === 'en' ? 'Booking Summary' : 'ملخص الحجز'}
                          </h4>
                          <div className="flex justify-between items-center text-sm">
-                           <span className="text-[#2B2D42]/60 uppercase tracking-wider text-[11px]">{lang === 'en' ? 'Service' : 'الخدمة'}</span>
+                           <span className="text-[#2B2D42]/80 uppercase tracking-wider text-[11px]">{lang === 'en' ? 'Service' : 'الخدمة'}</span>
                            <span className="font-medium text-[#2B2D42]">{servicesList.find(s => s.id === selectedService)?.name[lang as 'en'|'ar']}</span>
                          </div>
                          <div className="flex justify-between items-center text-sm">
-                           <span className="text-[#2B2D42]/60 uppercase tracking-wider text-[11px]">{lang === 'en' ? 'Date' : 'التاريخ'}</span>
+                           <span className="text-[#2B2D42]/80 uppercase tracking-wider text-[11px]">{lang === 'en' ? 'Date' : 'التاريخ'}</span>
                            <span className="font-medium text-[#2B2D42]">{format(selectedDate, 'MMM d, yyyy')}</span>
                          </div>
                          <div className="flex justify-between items-center text-sm">
-                           <span className="text-[#2B2D42]/60 uppercase tracking-wider text-[11px]">{lang === 'en' ? 'Time' : 'الوقت'}</span>
+                           <span className="text-[#2B2D42]/80 uppercase tracking-wider text-[11px]">{lang === 'en' ? 'Time' : 'الوقت'}</span>
                            <span className="font-medium text-[#2B2D42]">{selectedTime}</span>
                          </div>
                       </div>
 
                       <div className="flex justify-between items-center mt-auto">
-                         <button onClick={() => setStep(2)} className="text-[11px] uppercase tracking-widest text-[#2B2D42]/60 hover:text-[#2B2D42]">
+                         <button onClick={() => setStep(2)} className="text-[11px] uppercase tracking-widest text-[#2B2D42]/80 hover:text-[#2B2D42]">
                             {lang === 'en' ? '← Back' : 'رجوع →'}
                          </button>
                          <button
                            onClick={handleBook}
-                           disabled={isSubmitting}
-                           className="bg-[#D4A373] text-[#FFFFFF] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors disabled:opacity-50"
+                           className="press bg-[#D4A373] text-[#2B2D42] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] transition-colors"
                          >
-                           {isSubmitting ? (lang === 'en' ? 'Processing...' : 'جاري المعالجة...') : (lang === 'en' ? 'Confirm Booking' : 'تأكيد الحجز')}
+                           {lang === 'en' ? 'Confirm Booking' : 'تأكيد الحجز'}
                          </button>
                       </div>
                     </motion.div>
@@ -298,7 +305,7 @@ export default function BookingCalendar() {
                       </p>
                       <button
                         onClick={reset}
-                        className="border border-[#D4A373] text-[#2B2D42] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors"
+                        className="press border border-[#D4A373] text-[#2B2D42] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors"
                       >
                         {lang === 'en' ? 'Book Another' : 'حجز موعد آخر'}
                       </button>

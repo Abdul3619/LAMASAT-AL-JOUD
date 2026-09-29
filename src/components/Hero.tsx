@@ -1,7 +1,8 @@
 import React from 'react';
 import { useLanguage } from '../lib/LanguageContext';
 import { motion } from 'motion/react';
-import heroImage from '../assets/images/hero_bg_1782761055371.jpg';
+import SmartImage from './SmartImage';
+import { IMAGES } from '../data/images';
 
 export default function Hero() {
   const { t } = useLanguage();
@@ -10,11 +11,7 @@ export default function Hero() {
     <section id="home" className="relative h-screen w-full flex flex-col justify-end pb-32 overflow-hidden bg-[#FFF8F0]">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
-          src={heroImage}
-          alt="Luxury Salon Interior"
-          className="w-full h-full object-cover"
-        />
+        <SmartImage image={IMAGES.hero} eager sizes="100vw" wrapperClassName="w-full h-full" className="w-full h-full object-cover" />
         {/* Cinematic dark overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#111111]/80 via-[#111111]/30 to-[#111111]/10"></div>
       </div>
@@ -51,7 +48,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           href="#booking"
-          className="bg-[#D4A373] text-[#FFFFFF] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors"
+          className="press bg-[#D4A373] text-[#2B2D42] px-8 py-3 text-[11px] uppercase tracking-widest font-semibold hover:bg-[#FFFFFF] hover:text-[#2B2D42] transition-colors"
         >
           {t.hero.bookAppointment}
         </motion.a>

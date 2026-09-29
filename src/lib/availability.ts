@@ -1,6 +1,6 @@
 import { isSameDay } from 'date-fns';
 
-// Current wall-clock time at the salon (Bisha, KSA), so availability is right for visitors in any time zone
+// Current wall-clock time at the salon (Saudi time, Asia/Riyadh), so availability is right for visitors in any time zone
 export function salonNow(now: Date = new Date()) {
   return new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Riyadh' }));
 }
