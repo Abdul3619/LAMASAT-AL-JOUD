@@ -1,6 +1,8 @@
-# Lamasat Al Jood – Salon Website
+# Amāra Beauty Lounge – Salon Website
 
-I built this bilingual (English / Arabic) website for Lamasat Al Jood, a beauty salon in Bisha, Saudi Arabia. Clients can browse the services and book an appointment online.
+I built this bilingual (English / Arabic) website for Amāra Beauty Lounge, a demo beauty salon brand. Clients browse the services, sign in with Google and book an appointment online; the booking is saved to Firestore and the owner gets an email.
+
+Amāra is fictional. There is no street address, map or phone number; WhatsApp links open with the message ready until a real number is set in `src/data/site.ts`. The reviews are marked on the page as illustrative examples. The Firestore database ID still contains the project's original name because changing it would disconnect existing bookings.
 
 ## Stack
 

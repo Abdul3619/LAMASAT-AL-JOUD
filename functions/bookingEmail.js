@@ -28,13 +28,13 @@ export function buildBookingEmail(booking, appointmentId) {
   return {
     subject: oneLine(`New booking: ${service} on ${booking.date} at ${booking.time} - ${name}`),
     text: [
-      'A new booking was made on the Lamasat Al Joud website.',
+      'A new booking was made on the Amāra Beauty Lounge website.',
       '',
       ...rows.map(([label, value]) => `${label}: ${oneLine(value)}`),
       '',
       'View it in the Firebase console: Firestore > appointments.',
     ].join('\n'),
-    html: `<p>A new booking was made on the Lamasat Al Joud website.</p>
+    html: `<p>A new booking was made on the Amāra Beauty Lounge website.</p>
 <table cellpadding="6" style="border-collapse:collapse;font-family:sans-serif;font-size:14px">
 ${rows.map(([label, value]) => `<tr><td style="color:#666">${escapeHtml(label)}</td><td><strong>${escapeHtml(value)}</strong></td></tr>`).join('\n')}
 </table>

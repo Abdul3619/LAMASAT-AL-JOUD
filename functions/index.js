@@ -41,7 +41,7 @@ export const notifyNewBooking = onDocumentCreated(
     });
 
     const info = await transport.sendMail({
-      from: `"Lamasat Al Joud bookings" <${GMAIL_USER}>`,
+      from: `"Amāra Beauty Lounge bookings" <${GMAIL_USER}>`,
       to: NOTIFY_TO,
       ...message,
     });
